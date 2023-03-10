@@ -49,9 +49,9 @@ enum Trap {
 };
 
 export class VirtualMachine {
-    private readonly PC_START   = 0x3000
-    private readonly MR_KBSR    = 0xFE00 /* keyboard status mem mapped reg */
-    private readonly MR_KBDR    = 0xFE02 /* keyboard data mem mapped reg */
+    private readonly PC_START = 0x3000
+    private readonly MR_KBSR  = 0xFE00 /* keyboard status mem mapped reg */
+    private readonly MR_KBDR  = 0xFE02 /* keyboard data mem mapped reg */
 
     private memory    = new Uint16Array(65536)
     private registers = new Uint16Array(Register.R_COUNT)
