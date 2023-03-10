@@ -34,9 +34,9 @@ enum Opcode {
 }
 
 enum ConditionFlag {
-    FL_POS = 1 << 0, /* P */
-    FL_ZRO = 1 << 1, /* Z */
-    FL_NEG = 1 << 2, /* N */ 
+    FL_POS = 1, /* P */
+    FL_ZRO = 2, /* Z */
+    FL_NEG = 4, /* N */ 
 }
 
 enum Trap {
