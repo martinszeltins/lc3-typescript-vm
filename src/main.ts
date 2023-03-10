@@ -6,7 +6,7 @@ let programData = fs.readFileSync(programFileLocation)
 let programDataUInt16 = new Uint16Array(programData.length / 2)
 
 for (var i = 0; i < programData.length; i += 2) {
-    let uint16 = programData[i] << 8 | programData[i+1]
+    let uint16 = (programData[i] * 256) + programData[i + 1];
     programDataUInt16[i / 2] = uint16
 }
 
