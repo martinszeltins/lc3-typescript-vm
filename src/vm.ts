@@ -33,13 +33,13 @@ enum Opcode {
     OP_TRAP    /* execute trap */
 }
 
-enum ConditionFlags {
+enum ConditionFlag {
     FL_POS = 1 << 0, /* P */
     FL_ZRO = 1 << 1, /* Z */
     FL_NEG = 1 << 2, /* N */ 
 }
 
-enum Traps {
+enum Trap {
     TRAP_GETC  = 0x20,  /* get character from keyboard */
     TRAP_OUT   = 0x21,  /* output a character */
     TRAP_PUTS  = 0x22,  /* output a word string */
@@ -244,7 +244,7 @@ export class VirtualMachine {
                 case Opcode.OP_TRAP:
                     /* TRAP */
                     switch (instr & 0xFF) {
-                        case Traps.TRAP_GETC:
+                        case Trap.TRAP_GETC:
                             /* TRAP GETC */
                             /* read a single ASCII char */
                             let inputData = this.getInputAsync()
@@ -252,12 +252,12 @@ export class VirtualMachine {
                             this.registers[Register.R_R0] = this.get_char()
 
                             break
-                        case Traps.TRAP_OUT:
+                        case Trap.TRAP_OUT:
                             /* TRAP OUT */
                             console.log(String.fromCharCode(this.registers[Register.R_R0]))
 
                             break
-                        case Traps.TRAP_PUTS: {
+                        case Trap.TRAP_PUTS: {
                                 /* one char per word */
                                 let addr = this.registers[Register.R_R0]
                                 let charBuffer = []
@@ -271,11 +271,11 @@ export class VirtualMachine {
 
                                 break
                             }
-                        case Traps.TRAP_IN:
+                        case Trap.TRAP_IN:
                             this.registers[Register.R_R0] = this.get_char()
 
                             break
-                        case Traps.TRAP_PUTSP: {
+                        case Trap.TRAP_PUTSP: {
                                 /* one char per byte (two bytes per word) here we need to swap back to big endian format */
                                 let addr = this.registers[Register.R_R0]
                                 let charBuffer = []
@@ -298,7 +298,7 @@ export class VirtualMachine {
 
                                 break
                             }
-                        case Traps.TRAP_HALT:
+                        case Trap.TRAP_HALT:
                             /* TRAP HALT */
                             console.log("HALT")
                             running = false
@@ -317,11 +317,11 @@ export class VirtualMachine {
 
     private update_flags(r: number) {
         if (this.registers[r] == 0) {
-            this.registers[Register.R_COND] = ConditionFlags.FL_ZRO
+            this.registers[Register.R_COND] = ConditionFlag.FL_ZRO
         } else if (this.registers[r] >> 15) {
-            this.registers[Register.R_COND] = ConditionFlags.FL_NEG
+            this.registers[Register.R_COND] = ConditionFlag.FL_NEG
         } else {
-            this.registers[Register.R_COND] = ConditionFlags.FL_POS
+            this.registers[Register.R_COND] = ConditionFlag.FL_POS
         }
     }
 
