@@ -62,11 +62,11 @@ export class VirtualMachine {
     constructor (private readonly programData: string[]) {}
 
     public readProgram(rawData: Uint16Array) {
-        let memLocation = rawData[0]
+        let memoryLocation = rawData[0]
 
         for (let i = 1; i < rawData.length; i++) {
-            this.memory[memLocation] = rawData[i]
-            memLocation++
+            this.memory[memoryLocation] = rawData[i]
+            memoryLocation++
         }
     }
 
@@ -95,9 +95,11 @@ export class VirtualMachine {
 
                     if (imm_flag) {
                         let imm5 = this.sign_extend(instr & 0x1F, 5)
+
                         this.registers[r0] = this.registers[r1] + imm5
                     } else {
                         let r2 = instr & 0x7
+
                         this.registers[r0] = this.registers[r1] + this.registers[r2]
                     }
 
@@ -148,6 +150,7 @@ export class VirtualMachine {
                 case Opcode.OP_JMP: {
                     /* Also handles RET */
                     let r1 = (instr >> 6) & 0x7
+
                     this.registers[Register.R_PC] = this.registers[r1]
 
                     break
@@ -245,7 +248,6 @@ export class VirtualMachine {
                     /* TRAP */
                     switch (instr & 0xFF) {
                         case Trap.TRAP_GETC:
-                            /* TRAP GETC */
                             /* read a single ASCII char */
                             let inputData = this.getInputAsync()
 
@@ -253,7 +255,6 @@ export class VirtualMachine {
 
                             break
                         case Trap.TRAP_OUT:
-                            /* TRAP OUT */
                             console.log(String.fromCharCode(this.registers[Register.R_R0]))
 
                             break
@@ -299,7 +300,6 @@ export class VirtualMachine {
                                 break
                             }
                         case Trap.TRAP_HALT:
-                            /* TRAP HALT */
                             console.log("HALT")
                             running = false
                             break
