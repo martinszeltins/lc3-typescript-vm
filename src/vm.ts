@@ -59,13 +59,13 @@ export class VirtualMachine {
     // Providing user input this way for testing
     private inputIndex = 0
 
-    constructor (private readonly programInstructions: string[]) {}
+    constructor (private readonly inputQueue: string[]) {}
 
-    public readProgram(rawData: Uint16Array) {
-        let memoryLocation = rawData[0]
+    public readProgram(programInstructions: Uint16Array) {
+        let memoryLocation = programInstructions[0]
 
-        for (let i = 1; i < rawData.length; i++) {
-            this.memory[memoryLocation] = rawData[i]
+        for (let i = 1; i < programInstructions.length; i++) {
+            this.memory[memoryLocation] = programInstructions[i]
             memoryLocation++
         }
     }
@@ -342,7 +342,7 @@ export class VirtualMachine {
 
     private mem_read(address: number) {
         if (address === this.MR_KBSR) {
-            let input = this.programInstructions[this.inputIndex]
+            let input = this.inputQueue[this.inputIndex]
 
             if (input != null) {
                 this.memory[this.MR_KBSR] = (1 << 15)
@@ -357,7 +357,7 @@ export class VirtualMachine {
     }
 
     public get_char(): number {
-        let str = this.programInstructions[this.inputIndex]
+        let str = this.inputQueue[this.inputIndex]
         let char = str.charCodeAt(0)
         
         this.inputIndex++
