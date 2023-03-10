@@ -48,7 +48,7 @@ enum Traps {
     TRAP_HALT  = 0x25   /* halt the program */
 };
 
-export class ProgramRunner {
+export class VirtualMachine {
     private readonly UINT16_MAX = 65536
     private readonly PC_START   = 0x3000
     private readonly MR_KBSR    = 0xFE00 /* keyboard status mem mapped reg */
@@ -62,7 +62,7 @@ export class ProgramRunner {
 
     constructor (private readonly inputQueue: string[]) {}
 
-    public readImage(rawData: Uint16Array) {
+    public readProgram(rawData: Uint16Array) {
         let memLocation = rawData[0]
 
         for (let i = 1; i < rawData.length; i++) {
