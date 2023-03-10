@@ -1,6 +1,6 @@
 declare var process: any
 
-enum Registers {
+enum Register {
     R_R0 = 0,
     R_R1,
     R_R2,
@@ -14,7 +14,7 @@ enum Registers {
     R_COUNT
 }
 
-enum Opcodes {
+enum Opcode {
     OP_BR = 0, /* branch */
     OP_ADD,    /* add  */
     OP_LD,     /* load */
@@ -54,7 +54,7 @@ export class VirtualMachine {
     private readonly MR_KBDR    = 0xFE02 /* keyboard data mem mapped reg */
 
     private memory    = new Uint16Array(65536)
-    private registers = new Uint16Array(Registers.R_COUNT)
+    private registers = new Uint16Array(Register.R_COUNT)
     
     // Providing user input this way for testing
     private inputIndex = 0
@@ -71,19 +71,19 @@ export class VirtualMachine {
     }
 
     public run() {
-        this.registers[Registers.R_PC] = this.PC_START
+        this.registers[Register.R_PC] = this.PC_START
 
         let running = true
 
         while (running) {
-            let pcValue = this.registers[Registers.R_PC]
-            let instr = this.memory[pcValue]
-            let op = instr >> 12
+            let pcValue = this.registers[Register.R_PC]
+            let instr   = this.memory[pcValue]
+            let opcode  = instr >> 12
 
-            this.registers[Registers.R_PC]++
+            this.registers[Register.R_PC]++
 
-            switch (op) {
-                case Opcodes.OP_ADD: {
+            switch (opcode) {
+                case Opcode.OP_ADD: {
                     /* destination register (DR) */
                     let r0 = (instr >> 9) & 0x7
 
@@ -106,7 +106,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Opcodes.OP_AND: {
+                case Opcode.OP_AND: {
                     let r0 = (instr >> 9) & 0x7
                     let r1 = (instr >> 6) & 0x7
                     let imm_flag = (instr >> 5) & 0x1
@@ -124,7 +124,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Opcodes.OP_NOT: {
+                case Opcode.OP_NOT: {
                     let r0 = (instr >> 9) & 0x7
                     let r1 = (instr >> 6) & 0x7
                 
@@ -134,52 +134,52 @@ export class VirtualMachine {
                     break
                 }
 
-                case Opcodes.OP_BR:{
+                case Opcode.OP_BR:{
                     let pc_offset = this.sign_extend((instr) & 0x1ff, 9)
                     let cond_flag = (instr >> 9) & 0x7
 
-                    if (cond_flag & this.registers[Registers.R_COND]) {
-                        this.registers[Registers.R_PC] += pc_offset
+                    if (cond_flag & this.registers[Register.R_COND]) {
+                        this.registers[Register.R_PC] += pc_offset
                     }
 
                     break
                 }
 
-                case Opcodes.OP_JMP: {
+                case Opcode.OP_JMP: {
                     /* Also handles RET */
                     let r1 = (instr >> 6) & 0x7
-                    this.registers[Registers.R_PC] = this.registers[r1]
+                    this.registers[Register.R_PC] = this.registers[r1]
 
                     break
                 }
 
-                case Opcodes.OP_JSR: {
+                case Opcode.OP_JSR: {
                     let r1 = (instr >> 6) & 0x7
                     let long_pc_offset = this.sign_extend(instr & 0x7ff, 11)
                     let long_flag = (instr >> 11) & 1
                 
-                    this.registers[Registers.R_R7] = this.registers[Registers.R_PC]
+                    this.registers[Register.R_R7] = this.registers[Register.R_PC]
 
                     if (long_flag) {
-                        this.registers[Registers.R_PC] += long_pc_offset  /* JSR */
+                        this.registers[Register.R_PC] += long_pc_offset  /* JSR */
                     } else {
-                        this.registers[Registers.R_PC] = this.registers[r1] /* JSRR */
+                        this.registers[Register.R_PC] = this.registers[r1] /* JSRR */
                     }
 
                     break
                 }
 
-                case Opcodes.OP_LD: {
+                case Opcode.OP_LD: {
                     let r0 = (instr >> 9) & 0x7
                     let pc_offset = this.sign_extend(instr & 0x1ff, 9)
 
-                    this.registers[r0] = this.mem_read(this.registers[Registers.R_PC] + pc_offset)
+                    this.registers[r0] = this.mem_read(this.registers[Register.R_PC] + pc_offset)
                     this.update_flags(r0)
 
                     break
                 }
 
-                case Opcodes.OP_LDI: {
+                case Opcode.OP_LDI: {
                     /* destination register (DR) */
                     let r0 = (instr >> 9) & 0x7
 
@@ -187,12 +187,12 @@ export class VirtualMachine {
                     let pc_offset = this.sign_extend(instr & 0x1ff, 9)
 
                     /* add pc_offset to the current PC, look at that memory location to get the final address */
-                    this.registers[r0] = this.mem_read(this.mem_read(this.registers[Registers.R_PC] + pc_offset))
+                    this.registers[r0] = this.mem_read(this.mem_read(this.registers[Register.R_PC] + pc_offset))
                     this.update_flags(r0)
 
                     break
                 }
-                case Opcodes.OP_LDR: {
+                case Opcode.OP_LDR: {
                     let r0 = (instr >> 9) & 0x7
                     let r1 = (instr >> 6) & 0x7
                     let offset = this.sign_extend(instr & 0x3F, 6)
@@ -203,35 +203,35 @@ export class VirtualMachine {
                     break
                 }
 
-                case Opcodes.OP_LEA: {
+                case Opcode.OP_LEA: {
                     let r0 = (instr >> 9) & 0x7
                     let pc_offset = this.sign_extend(instr & 0x1ff, 9)
 
-                    this.registers[r0] = this.registers[Registers.R_PC] + pc_offset
+                    this.registers[r0] = this.registers[Register.R_PC] + pc_offset
                     this.update_flags(r0)
 
                     break
                 }
 
-                case Opcodes.OP_ST: {
+                case Opcode.OP_ST: {
                     let r0 = (instr >> 9) & 0x7
                     let pc_offset = this.sign_extend(instr & 0x1ff, 9)
 
-                    this.mem_write(this.registers[Registers.R_PC] + pc_offset, this.registers[r0])
+                    this.mem_write(this.registers[Register.R_PC] + pc_offset, this.registers[r0])
 
                     break
                 }
 
-                case Opcodes.OP_STI: {
+                case Opcode.OP_STI: {
                     let r0 = (instr >> 9) & 0x7
                     let pc_offset = this.sign_extend(instr & 0x1ff, 9)
 
-                    this.mem_write(this.mem_read(this.registers[Registers.R_PC] + pc_offset), this.registers[r0])
+                    this.mem_write(this.mem_read(this.registers[Register.R_PC] + pc_offset), this.registers[r0])
 
                     break
                 }
 
-                case Opcodes.OP_STR: {
+                case Opcode.OP_STR: {
                     let r0 = (instr >> 9) & 0x7
                     let r1 = (instr >> 6) & 0x7
                     let offset = this.sign_extend(instr & 0x3F, 6)
@@ -241,7 +241,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Opcodes.OP_TRAP:
+                case Opcode.OP_TRAP:
                     /* TRAP */
                     switch (instr & 0xFF) {
                         case Traps.TRAP_GETC:
@@ -249,17 +249,17 @@ export class VirtualMachine {
                             /* read a single ASCII char */
                             let inputData = this.getInputAsync()
 
-                            this.registers[Registers.R_R0] = this.get_char()
+                            this.registers[Register.R_R0] = this.get_char()
 
                             break
                         case Traps.TRAP_OUT:
                             /* TRAP OUT */
-                            console.log(String.fromCharCode(this.registers[Registers.R_R0]))
+                            console.log(String.fromCharCode(this.registers[Register.R_R0]))
 
                             break
                         case Traps.TRAP_PUTS: {
                                 /* one char per word */
-                                let addr = this.registers[Registers.R_R0]
+                                let addr = this.registers[Register.R_R0]
                                 let charBuffer = []
 
                                 while (this.memory[addr] !== 0) {
@@ -272,12 +272,12 @@ export class VirtualMachine {
                                 break
                             }
                         case Traps.TRAP_IN:
-                            this.registers[Registers.R_R0] = this.get_char()
+                            this.registers[Register.R_R0] = this.get_char()
 
                             break
                         case Traps.TRAP_PUTSP: {
                                 /* one char per byte (two bytes per word) here we need to swap back to big endian format */
-                                let addr = this.registers[Registers.R_R0]
+                                let addr = this.registers[Register.R_R0]
                                 let charBuffer = []
 
                                 while (this.memory[addr] != 0) {
@@ -306,8 +306,8 @@ export class VirtualMachine {
                     }
     
                     break
-                case Opcodes.OP_RES:
-                case Opcodes.OP_RTI:
+                case Opcode.OP_RES:
+                case Opcode.OP_RTI:
                 default:
                     console.log("Bad op!")
                     return
@@ -317,11 +317,11 @@ export class VirtualMachine {
 
     private update_flags(r: number) {
         if (this.registers[r] == 0) {
-            this.registers[Registers.R_COND] = ConditionFlags.FL_ZRO
+            this.registers[Register.R_COND] = ConditionFlags.FL_ZRO
         } else if (this.registers[r] >> 15) {
-            this.registers[Registers.R_COND] = ConditionFlags.FL_NEG
+            this.registers[Register.R_COND] = ConditionFlags.FL_NEG
         } else {
-            this.registers[Registers.R_COND] = ConditionFlags.FL_POS
+            this.registers[Register.R_COND] = ConditionFlags.FL_POS
         }
     }
 
