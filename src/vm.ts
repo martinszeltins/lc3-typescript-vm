@@ -1,4 +1,4 @@
-declare var process:any;
+declare var process: any
 
 enum Registers {
     R_R0 = 0,
@@ -40,35 +40,34 @@ enum ConditionFlags {
 }
 
 enum Traps {
-    TRAP_GETC = 0x20,  /* get character from keyboard */
-    TRAP_OUT = 0x21,   /* output a character */
-    TRAP_PUTS = 0x22,  /* output a word string */
-    TRAP_IN = 0x23,    /* input a string */
-    TRAP_PUTSP = 0x24, /* output a byte string */
-    TRAP_HALT = 0x25   /* halt the program */
+    TRAP_GETC  = 0x20,  /* get character from keyboard */
+    TRAP_OUT   = 0x21,  /* output a character */
+    TRAP_PUTS  = 0x22,  /* output a word string */
+    TRAP_IN    = 0x23,  /* input a string */
+    TRAP_PUTSP = 0x24,  /* output a byte string */
+    TRAP_HALT  = 0x25   /* halt the program */
 };
 
 export class ProgramRunner {
-    private readonly UINT16_MAX = 65536;
-    private readonly PC_START = 0x3000;
-    private readonly MR_KBSR = 0xFE00; /* keyboard status mem mapped reg */
-    private readonly MR_KBDR = 0xFE02; /* keyboard data mem mapped reg */
+    private readonly UINT16_MAX = 65536
+    private readonly PC_START   = 0x3000
+    private readonly MR_KBSR    = 0xFE00 /* keyboard status mem mapped reg */
+    private readonly MR_KBDR    = 0xFE02 /* keyboard data mem mapped reg */
 
-    private memory = new Uint16Array(this.UINT16_MAX);
-    private registers = new Uint16Array(Registers.R_COUNT);
+    private memory    = new Uint16Array(this.UINT16_MAX)
+    private registers = new Uint16Array(Registers.R_COUNT)
     
     // Providing user input this way for testing
-    private inputIndex:number = 0;
+    private inputIndex: number = 0
 
-    constructor (
-        private readonly inputQueue:Array<string>) {
-    }
+    constructor (private readonly inputQueue: string[]) {}
 
-    public readImage(rawData:Uint16Array) {
-        var memLocation = rawData[0];
-        for (var i = 1; i < rawData.length; i++) {
-            this.memory[memLocation] = rawData[i];
-            memLocation++;
+    public readImage(rawData: Uint16Array) {
+        let memLocation = rawData[0]
+
+        for (let i = 1; i < rawData.length; i++) {
+            this.memory[memLocation] = rawData[i]
+            memLocation++
         }
     }
 
