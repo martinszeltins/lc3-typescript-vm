@@ -14,7 +14,7 @@ enum Registers {
     R_COUNT
 }
 
-enum Ops {
+enum Opcodes {
     OP_BR = 0, /* branch */
     OP_ADD,    /* add  */
     OP_LD,     /* load */
@@ -49,18 +49,17 @@ enum Traps {
 };
 
 export class VirtualMachine {
-    private readonly UINT16_MAX = 65536
     private readonly PC_START   = 0x3000
     private readonly MR_KBSR    = 0xFE00 /* keyboard status mem mapped reg */
     private readonly MR_KBDR    = 0xFE02 /* keyboard data mem mapped reg */
 
-    private memory    = new Uint16Array(this.UINT16_MAX)
+    private memory    = new Uint16Array(65536)
     private registers = new Uint16Array(Registers.R_COUNT)
     
     // Providing user input this way for testing
-    private inputIndex: number = 0
+    private inputIndex = 0
 
-    constructor (private readonly inputQueue: string[]) {}
+    constructor (private readonly programData: string[]) {}
 
     public readProgram(rawData: Uint16Array) {
         let memLocation = rawData[0]
@@ -84,7 +83,7 @@ export class VirtualMachine {
             this.registers[Registers.R_PC]++
 
             switch (op) {
-                case Ops.OP_ADD: {
+                case Opcodes.OP_ADD: {
                     /* destination register (DR) */
                     let r0 = (instr >> 9) & 0x7
 
@@ -107,7 +106,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_AND: {
+                case Opcodes.OP_AND: {
                     let r0 = (instr >> 9) & 0x7
                     let r1 = (instr >> 6) & 0x7
                     let imm_flag = (instr >> 5) & 0x1
@@ -125,7 +124,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_NOT: {
+                case Opcodes.OP_NOT: {
                     let r0 = (instr >> 9) & 0x7
                     let r1 = (instr >> 6) & 0x7
                 
@@ -135,7 +134,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_BR:{
+                case Opcodes.OP_BR:{
                     let pc_offset = this.sign_extend((instr) & 0x1ff, 9)
                     let cond_flag = (instr >> 9) & 0x7
 
@@ -146,7 +145,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_JMP: {
+                case Opcodes.OP_JMP: {
                     /* Also handles RET */
                     let r1 = (instr >> 6) & 0x7
                     this.registers[Registers.R_PC] = this.registers[r1]
@@ -154,7 +153,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_JSR: {
+                case Opcodes.OP_JSR: {
                     let r1 = (instr >> 6) & 0x7
                     let long_pc_offset = this.sign_extend(instr & 0x7ff, 11)
                     let long_flag = (instr >> 11) & 1
@@ -170,7 +169,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_LD: {
+                case Opcodes.OP_LD: {
                     let r0 = (instr >> 9) & 0x7
                     let pc_offset = this.sign_extend(instr & 0x1ff, 9)
 
@@ -180,7 +179,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_LDI: {
+                case Opcodes.OP_LDI: {
                     /* destination register (DR) */
                     let r0 = (instr >> 9) & 0x7
 
@@ -193,7 +192,7 @@ export class VirtualMachine {
 
                     break
                 }
-                case Ops.OP_LDR: {
+                case Opcodes.OP_LDR: {
                     let r0 = (instr >> 9) & 0x7
                     let r1 = (instr >> 6) & 0x7
                     let offset = this.sign_extend(instr & 0x3F, 6)
@@ -204,7 +203,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_LEA: {
+                case Opcodes.OP_LEA: {
                     let r0 = (instr >> 9) & 0x7
                     let pc_offset = this.sign_extend(instr & 0x1ff, 9)
 
@@ -214,7 +213,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_ST: {
+                case Opcodes.OP_ST: {
                     let r0 = (instr >> 9) & 0x7
                     let pc_offset = this.sign_extend(instr & 0x1ff, 9)
 
@@ -223,7 +222,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_STI: {
+                case Opcodes.OP_STI: {
                     let r0 = (instr >> 9) & 0x7
                     let pc_offset = this.sign_extend(instr & 0x1ff, 9)
 
@@ -232,7 +231,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_STR: {
+                case Opcodes.OP_STR: {
                     let r0 = (instr >> 9) & 0x7
                     let r1 = (instr >> 6) & 0x7
                     let offset = this.sign_extend(instr & 0x3F, 6)
@@ -242,7 +241,7 @@ export class VirtualMachine {
                     break
                 }
 
-                case Ops.OP_TRAP:
+                case Opcodes.OP_TRAP:
                     /* TRAP */
                     switch (instr & 0xFF) {
                         case Traps.TRAP_GETC:
@@ -307,8 +306,8 @@ export class VirtualMachine {
                     }
     
                     break
-                case Ops.OP_RES:
-                case Ops.OP_RTI:
+                case Opcodes.OP_RES:
+                case Opcodes.OP_RTI:
                 default:
                     console.log("Bad op!")
                     return
@@ -343,7 +342,7 @@ export class VirtualMachine {
 
     private mem_read(address: number) {
         if (address === this.MR_KBSR) {
-            let input = this.inputQueue[this.inputIndex]
+            let input = this.programData[this.inputIndex]
 
             if (input != null) {
                 this.memory[this.MR_KBSR] = (1 << 15)
@@ -358,7 +357,7 @@ export class VirtualMachine {
     }
 
     public get_char(): number {
-        let str = this.inputQueue[this.inputIndex]
+        let str = this.programData[this.inputIndex]
         let char = str.charCodeAt(0)
         
         this.inputIndex++
