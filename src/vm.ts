@@ -73,6 +73,7 @@ export class VirtualMachine {
     public run() {
         this.registers[Register.R_PC] = this.PC_START
 
+        let instructionNumber = 1
         let running = true
 
         while (running) {
@@ -82,8 +83,21 @@ export class VirtualMachine {
 
             this.registers[Register.R_PC]++
 
+            console.log({ instructionNumber })
+            
+            let binaryString = instruction.toString(2)
+            let padding = "0".repeat(16 - binaryString.length)
+            console.log({ instruction: padding + binaryString })
+
+            let binaryStringOp = opcode.toString(2)
+            let paddingOp = "0".repeat(16 - binaryStringOp.length)
+            console.log({ opcode })
+            console.log({ opcode: paddingOp + binaryStringOp })
+            
+
             switch (opcode) {
                 case Opcode.OP_ADD: {
+                    console.log({ opcode: 'OP_ADD' })
                     /* destination register (DR) */
                     let r0 = (instruction >> 9) & 0x7
 
@@ -109,6 +123,7 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_AND: {
+                    console.log({ opcode: 'OP_AND' })
                     let r0 = (instruction >> 9) & 0x7
                     let r1 = (instruction >> 6) & 0x7
                     let imm_flag = (instruction >> 5) & 0x1
@@ -127,6 +142,7 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_NOT: {
+                    console.log({ opcode: 'OP_NOT' })
                     let r0 = (instruction >> 9) & 0x7
                     let r1 = (instruction >> 6) & 0x7
                 
@@ -137,6 +153,7 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_BR:{
+                    console.log({ opcode: 'OP_BR' })
                     let pc_offset = this.sign_extend((instruction) & 0x1ff, 9)
                     let cond_flag = (instruction >> 9) & 0x7
 
@@ -148,6 +165,7 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_JMP: {
+                    console.log({ opcode: 'OP_JMP' })
                     /* Also handles RET */
                     let r1 = (instruction >> 6) & 0x7
 
@@ -157,6 +175,7 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_JSR: {
+                    console.log({ opcode: 'OP_JSR' })
                     let r1 = (instruction >> 6) & 0x7
                     let long_pc_offset = this.sign_extend(instruction & 0x7ff, 11)
                     let long_flag = (instruction >> 11) & 1
@@ -173,16 +192,18 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_LD: {
-                    let r0 = (instruction >> 9) & 0x7
+                    console.log({ opcode: 'OP_LD' })
+                    let DR = (instruction >> 9) & 0x7 // bits 9-11 is the destination register
                     let pc_offset = this.sign_extend(instruction & 0x1ff, 9)
 
-                    this.registers[r0] = this.mem_read(this.registers[Register.R_PC] + pc_offset)
-                    this.update_flags(r0)
+                    this.registers[DR] = this.mem_read(this.registers[Register.R_PC] + pc_offset)
+                    this.update_flags(DR)
 
                     break
                 }
 
                 case Opcode.OP_LDI: {
+                    console.log({ opcode: 'OP_LDI' })
                     /* destination register (DR) */
                     let r0 = (instruction >> 9) & 0x7
 
@@ -196,6 +217,7 @@ export class VirtualMachine {
                     break
                 }
                 case Opcode.OP_LDR: {
+                    console.log({ opcode: 'OP_LDR' })
                     let r0 = (instruction >> 9) & 0x7
                     let r1 = (instruction >> 6) & 0x7
                     let offset = this.sign_extend(instruction & 0x3F, 6)
@@ -207,6 +229,7 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_LEA: {
+                    console.log({ opcode: 'OP_LEA' })
                     let r0 = (instruction >> 9) & 0x7
                     let pc_offset = this.sign_extend(instruction & 0x1ff, 9)
 
@@ -217,6 +240,7 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_ST: {
+                    console.log({ opcode: 'OP_ST' })
                     let r0 = (instruction >> 9) & 0x7
                     let pc_offset = this.sign_extend(instruction & 0x1ff, 9)
 
@@ -226,6 +250,7 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_STI: {
+                    console.log({ opcode: 'OP_STI' })
                     let r0 = (instruction >> 9) & 0x7
                     let pc_offset = this.sign_extend(instruction & 0x1ff, 9)
 
@@ -235,6 +260,7 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_STR: {
+                    console.log({ opcode: 'OP_STR' })
                     let r0 = (instruction >> 9) & 0x7
                     let r1 = (instruction >> 6) & 0x7
                     let offset = this.sign_extend(instruction & 0x3F, 6)
@@ -245,9 +271,11 @@ export class VirtualMachine {
                 }
 
                 case Opcode.OP_TRAP:
+                    console.log({ opcode: 'OP_TRAP' })
                     /* TRAP */
                     switch (instruction & 0xFF) {
                         case Trap.TRAP_GETC:
+                            console.log({ opcode: 'TRAP_GETC' })
                             /* read a single ASCII char */
                             let inputData = this.getInputAsync()
 
@@ -255,10 +283,12 @@ export class VirtualMachine {
 
                             break
                         case Trap.TRAP_OUT:
+                            console.log({ opcode: 'TRAP_OUT' })
                             console.log(String.fromCharCode(this.registers[Register.R_R0]))
 
                             break
                         case Trap.TRAP_PUTS: {
+                                console.log({ opcode: 'TRAP_PUTS' })
                                 /* one char per word */
                                 let addr = this.registers[Register.R_R0]
                                 let charBuffer = []
@@ -273,10 +303,12 @@ export class VirtualMachine {
                                 break
                             }
                         case Trap.TRAP_IN:
+                            console.log({ opcode: 'TRAP_IN' })
                             this.registers[Register.R_R0] = this.get_char()
 
                             break
                         case Trap.TRAP_PUTSP: {
+                                console.log({ opcode: 'TRAP_PUTSP' })
                                 /* one char per byte (two bytes per word) here we need to swap back to big endian format */
                                 let addr = this.registers[Register.R_R0]
                                 let charBuffer = []
@@ -300,6 +332,7 @@ export class VirtualMachine {
                                 break
                             }
                         case Trap.TRAP_HALT:
+                            console.log({ opcode: 'TRAP_HALT' })
                             console.log("HALT")
                             running = false
                             break
@@ -309,9 +342,16 @@ export class VirtualMachine {
                 case Opcode.OP_RES:
                 case Opcode.OP_RTI:
                 default:
+                    console.log({ opcode: 'OP_BAD_OP' })
                     console.log("Bad op!")
                     return
             }
+
+            console.log('')
+
+            if (instructionNumber > 100) running = false
+
+            instructionNumber++
         }
     }
 
