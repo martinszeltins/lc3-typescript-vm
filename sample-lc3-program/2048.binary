@@ -1,5 +1,5 @@
        0011000000000000 # 0x3000 (12,288) The beginning address of the program (not an instruction to be executed)
-> 12288: 0010110000010111 # LOAD (110, 000010111)  LOAD                     Calculate the memory address of 000010111 offset and store the contents of that address into R6 register.
+12288: 0010110000010111 # LOAD (110, 000010111)  LOAD                     Calculate the memory address of 000010111 offset and store the contents of that address into R6 register.
 12289: 1110101000011000 # LEA  (101, 000011000)  LOAD EFFECTIVE ADDRESS.  Calculate the relative memory address of 000011000 offset and put the calculated memory into R5 register.
 12290: 1110000010000010 # LEA
 12291: 1111000000100010
@@ -23,9 +23,9 @@
 12309: 0100101001101101
 12310: 0000001111110100
 12311: 1111000000100101
-12312: 0100000000000000
-12313: 0000000000000000 \0
-12314: 0000000000000001
+12312: 0100000000000000 x4000   (the memory location of STACK)
+12313: 0000000000000000 \0      DEAD
+12314: 0000000000000001         BOARD
 12315: 0000000000000111
 12316: 0000000000001000
 12317: 0000000000001111
