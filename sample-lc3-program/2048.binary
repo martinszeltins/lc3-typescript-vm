@@ -12325,9 +12325,9 @@
 12285: 
 12286: 
 12287:
-12288: 0010110000010111 # LOAD (110, 000010111)  LOAD                     Calculate the memory address of 000010111 offset and store the contents of that address into R6 register. In this case it is 23 (000010111) memory locations away from here.
-12289: 1110101000011000 # LEA  (101, 000011000)  LOAD EFFECTIVE ADDRESS.  Calculate the relative memory address of 000011000 offset and put the calculated memory into R5 register.
-12290: 1110000010000010 # LEA
+12288: 0010110000010111 # LOAD (110, 000010111)  LOAD                     Calculate the memory address of 000010111 offset and store the contents of that address into R6 register. In this case it is 23 (000010111) memory locations away from here. [LD, R6, STACK]
+12289: 1110101000011000 # LEA  (101, 000011000)  LOAD EFFECTIVE ADDRESS.  Calculate the memory address of 000011000 offset and put the calculated memory into R5 register. In this case it is 24 (000011000) memory locations away from here. [LEA R5, BOARD]
+12290: 1110000010000010 # LEA  (000, 010000010)  LOAD EFFECTIVE ADDRESS.  Calculate the memory address of 000011000 offset and put the calculated memory into R0 register. In this case it is 130 (010000010) memory locations away from here. [LE, R0, INSTRUCTION_MESSAGE]
 12291: 1111000000100010
 12292: 1110000000101000
 12293: 0100101001111101
