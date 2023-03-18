@@ -1,3 +1,10 @@
+1. Trap Table
+2. Interrupt Table
+3. ROM / OS / OS Memory
+4. User Programs (x3000) (40k memory locations)
+5. Stack (x4000)
+6. Memory Mapped I/O (512 memory locations)
+
 1: 
 2: 
 3: 
