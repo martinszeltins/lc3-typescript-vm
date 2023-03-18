@@ -296,7 +296,6 @@ export class VirtualMachine {
                             break
                         case Trap.TRAP_PUTS: {
                                 console.log({ opcode: 'TRAP_PUTS' })
-                                /* one char per word */
                                 let addr = this.registers[Register.R_R0]
 
                                 while (this.memory[addr] !== 0) {
