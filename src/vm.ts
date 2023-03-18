@@ -298,14 +298,11 @@ export class VirtualMachine {
                                 console.log({ opcode: 'TRAP_PUTS' })
                                 /* one char per word */
                                 let addr = this.registers[Register.R_R0]
-                                let charBuffer = []
 
                                 while (this.memory[addr] !== 0) {
-                                    charBuffer.push(String.fromCharCode(this.memory[addr]))
+                                    console.log(String.fromCharCode(this.memory[addr]))
                                     addr++
                                 }
-
-                                console.log(charBuffer.join(''))
 
                                 break
                             }
