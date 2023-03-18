@@ -62,8 +62,15 @@ export class VirtualMachine {
     constructor (private readonly inputQueue: string[]) {}
 
     public readProgram(programInstructions: Uint16Array) {
+        /**
+         * programInstructions[0] actually does not hold an opcode
+         * but the memory location where the program should be loaded.
+         * Usually programInstructions[0] = x3000
+         */
         let memoryLocation = programInstructions[0]
 
+        // Notice i starts with 1 not 0, we skip the first word since
+        // it is not an opcode but memory location where to load the program.
         for (let i = 1; i < programInstructions.length; i++) {
             this.memory[memoryLocation] = programInstructions[i]
             memoryLocation++
@@ -230,11 +237,11 @@ export class VirtualMachine {
 
                 case Opcode.OP_LEA: {
                     console.log({ opcode: 'OP_LEA' })
-                    let r0 = (instruction >> 9) & 0x7
+                    let DR = (instruction >> 9) & 0x7
                     let pc_offset = this.sign_extend(instruction & 0x1ff, 9)
 
-                    this.registers[r0] = this.registers[Register.R_PC] + pc_offset
-                    this.update_flags(r0)
+                    this.registers[DR] = this.registers[Register.R_PC] + pc_offset
+                    this.update_flags(DR)
 
                     break
                 }
