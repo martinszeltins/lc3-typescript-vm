@@ -31,11 +31,11 @@
 | 65024 – 65535 |   Memory Mapped I/O  |  0.77% |
 +---------------+----------------------+--------+
 
-1. Trap Table
-2. Interrupt Table
-3. ROM / OS / OS Memory
+1. Trap Table (software interrupts)
+2. Interrupt Table (hardware interrupts)
+3. ROM / OS / OS Memory (system program with its memory)
 4. User Programs (x3000) (40k memory locations)
-   Stack (x4000)
+   Stack (x4000) (stack for the user programs)
 5. Memory Mapped I/O (512 memory locations)
 
 1: 
