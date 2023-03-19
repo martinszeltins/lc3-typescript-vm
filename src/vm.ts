@@ -296,11 +296,11 @@ export class VirtualMachine {
                             break
                         case Trap.TRAP_PUTS: {
                                 console.log({ opcode: 'TRAP_PUTS' })
-                                let addr = this.registers[Register.R_R0]
+                                let address = this.registers[Register.R_R0]
 
-                                while (this.memory[addr] !== 0) {
-                                    console.log(String.fromCharCode(this.memory[addr]))
-                                    addr++
+                                while (this.memory[address] !== 0) {
+                                    console.log(String.fromCharCode(this.memory[address]))
+                                    address++
                                 }
 
                                 break
